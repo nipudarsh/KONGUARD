@@ -1,4 +1,4 @@
-# KONGUARD
+# KONGUARD 🦍🛡️
 ## Quick Start (Windows)
 
 ### Run (recommended)
