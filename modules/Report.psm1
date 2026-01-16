@@ -9,13 +9,11 @@ function New-KonguardHtmlReport {
     $sw   = $Scan.software
     $sec  = $Scan.security
 
-    # Build disk lines safely
     $diskLines = ""
     if ($hw.disks) {
         $diskLines = [string]::Join("`n", ($hw.disks | ForEach-Object { "$($_.model) - $($_.size_gb) GB" }))
     }
 
-    # Build startup lines safely (show top 25)
     $startupLines = ""
     if ($sw.startup_items) {
         $startupLines = [string]::Join("`n", ($sw.startup_items | Select-Object -First 25 | ForEach-Object { "$($_.Name) :: $($_.Command)" }))
@@ -29,6 +27,27 @@ function New-KonguardHtmlReport {
 <div class='row'><span class='k'>Antivirus Enabled</span> <b>$($sec.antivirus_enabled)</b></div>
 <div class='row'><span class='k'>Real-Time Protection</span> <b>$($sec.real_time_protection)</b></div>
 <div class='row'><span class='k'>Last Quick Scan</span> $($sec.last_quick_scan_end_time)</div>
+"@
+    }
+
+    # Health score section (safe)
+    $healthBlock = ""
+    if ($Scan.health) {
+        $reasonsText = ""
+        if ($Scan.health.reasons) {
+            $reasonsText = [string]::Join("`n", $Scan.health.reasons)
+        }
+
+        $healthBlock = @"
+  <div class="card">
+    <h2>📊 System Health Score</h2>
+    <div class="row"><span class="k">Score</span> <b>$($Scan.health.score) / 100</b> ($($Scan.health.rating))</div>
+    <div class="row"><span class="k">Performance</span> $($Scan.health.breakdown.performance)</div>
+    <div class="row"><span class="k">Startup Load</span> $($Scan.health.breakdown.startup)</div>
+    <div class="row"><span class="k">Security</span> $($Scan.health.breakdown.security)</div>
+    <div class="row"><span class="k">Why this score?</span></div>
+    <pre>$reasonsText</pre>
+  </div>
 "@
     }
 
@@ -57,6 +76,8 @@ function New-KonguardHtmlReport {
     <b>Transparency:</b> This scan runs locally. No data leaves your computer. (Read-only)
   </div>
 
+$healthBlock
+
   <div class="card">
     <h2>✅ Hardware</h2>
     <div class="row"><span class="k">CPU</span> $($hw.cpu.Name)</div>
@@ -84,8 +105,6 @@ function New-KonguardHtmlReport {
 
     $html | Out-File -Encoding UTF8 $OutputPath
 }
-
-Export-ModuleMember -Function New-KonguardHtmlReport
 
 function New-KonguardComparisonReport {
     param(
@@ -141,5 +160,4 @@ function New-KonguardComparisonReport {
     $html | Out-File -Encoding UTF8 $OutputPath
 }
 
-Export-ModuleMember -Function New-KonguardComparisonReport
-
+Export-ModuleMember -Function New-KonguardHtmlReport, New-KonguardComparisonReport
