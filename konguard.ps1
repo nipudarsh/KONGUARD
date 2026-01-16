@@ -1,3 +1,4 @@
+
 # KONGUARD - Portable System Verification Tool (offline, read-only)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -15,7 +16,7 @@ function Import-KGModule($name) {
 Import-KGModule "Hardware.psm1"
 Import-KGModule "Software.psm1"
 Import-KGModule "Security.psm1"
-
+Import-KGModule "Baseline.psm1"
 # Report module (NEW)
 Import-KGModule "Report.psm1"
 
@@ -45,6 +46,22 @@ $scan | ConvertTo-Json -Depth 8 | Out-File -Encoding UTF8 $snapPath
 # Save report (HTML)
 $repPath = Join-Path $repDir ("report_{0}.html" -f (Get-Date -Format "yyyyMMdd_HHmmss"))
 New-KonguardHtmlReport -Scan $scan -OutputPath $repPath
+
+# Baseline + comparison (NEW)
+$baselinePath = Join-Path $Root "snapshots\baseline.json"
+$baseline = Import-KonguardBaseline -BaselinePath $baselinePath
+
+if ($null -eq $baseline) {
+    $saved = Export-KonguardBaseline -Scan $scan -BaselinePath $baselinePath
+    Write-Host "Baseline created: $saved" -ForegroundColor Yellow
+} else {
+    $diff = Compare-KonguardBaseline -Baseline $baseline -Current $scan
+    $cmpPath = Join-Path $repDir ("comparison_{0}.html" -f (Get-Date -Format "yyyyMMdd_HHmmss"))
+    New-KonguardComparisonReport -Diff $diff -OutputPath $cmpPath
+    Write-Host "Saved comparison report: $cmpPath" -ForegroundColor Green
+}
+
+
 
 Write-Host "Saved snapshot: $snapPath" -ForegroundColor Green
 Write-Host "Saved report:   $repPath" -ForegroundColor Green

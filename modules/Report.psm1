@@ -86,3 +86,60 @@ function New-KonguardHtmlReport {
 }
 
 Export-ModuleMember -Function New-KonguardHtmlReport
+
+function New-KonguardComparisonReport {
+    param(
+        [Parameter(Mandatory=$true)] $Diff,
+        [Parameter(Mandatory=$true)] [string] $OutputPath
+    )
+
+    $ramMsg = "No change"
+    if ($Diff.ram_change_gb -gt 0) { $ramMsg = "Upgraded (+$($Diff.ram_change_gb) GB)" }
+    elseif ($Diff.ram_change_gb -lt 0) { $ramMsg = "Reduced ($($Diff.ram_change_gb) GB)" }
+
+    $html = @"
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>KONGUARD Comparison Report</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 24px; }
+    .banner { padding: 12px 14px; border: 1px solid #ccc; border-radius: 10px; margin: 14px 0 18px 0; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin: 14px 0; }
+    .title { font-size: 22px; font-weight: 700; margin: 0 0 6px 0; }
+    .row { margin: 8px 0; }
+    .k { font-weight: 600; display: inline-block; min-width: 240px; }
+  </style>
+</head>
+<body>
+  <div class="title">🦍 KONGUARD Comparison Report</div>
+
+  <div class="banner">
+    <b>Transparency:</b> This comparison is local-only. No data leaves your computer. (Read-only)
+  </div>
+
+  <div class="card">
+    <h2>Changes Summary</h2>
+    <div class="row"><span class="k">RAM</span> $ramMsg</div>
+    <div class="row"><span class="k">RAM (before)</span> $($Diff.ram_before_gb) GB</div>
+    <div class="row"><span class="k">RAM (after)</span>  $($Diff.ram_after_gb) GB</div>
+
+    <div class="row"><span class="k">Startup items (before)</span> $($Diff.startup_count_before)</div>
+    <div class="row"><span class="k">Startup items (after)</span>  $($Diff.startup_count_after)</div>
+
+    <div class="row"><span class="k">Antivirus enabled (before)</span> $($Diff.antivirus_before)</div>
+    <div class="row"><span class="k">Antivirus enabled (after)</span>  $($Diff.antivirus_after)</div>
+
+    <div class="row"><span class="k">Real-time protection (before)</span> $($Diff.rtp_before)</div>
+    <div class="row"><span class="k">Real-time protection (after)</span>  $($Diff.rtp_after)</div>
+  </div>
+</body>
+</html>
+"@
+
+    $html | Out-File -Encoding UTF8 $OutputPath
+}
+
+Export-ModuleMember -Function New-KonguardComparisonReport
+
