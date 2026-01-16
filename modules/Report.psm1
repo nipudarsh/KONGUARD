@@ -1,7 +1,9 @@
 function New-KonguardHtmlReport {
     param(
         [Parameter(Mandatory=$true)] $Scan,
-        [Parameter(Mandatory=$true)] [string] $OutputPath
+        [Parameter(Mandatory=$true)] [string] $OutputPath,
+        [ValidateSet("user","tech")]
+        [string] $Mode = "user"
     )
 
     $meta = $Scan.meta
@@ -30,13 +32,11 @@ function New-KonguardHtmlReport {
 "@
     }
 
-    # Health score section (safe)
+    # Health score block
     $healthBlock = ""
     if ($Scan.health) {
         $reasonsText = ""
-        if ($Scan.health.reasons) {
-            $reasonsText = [string]::Join("`n", $Scan.health.reasons)
-        }
+        if ($Scan.health.reasons) { $reasonsText = [string]::Join("`n", $Scan.health.reasons) }
 
         $healthBlock = @"
   <div class="card">
@@ -47,6 +47,19 @@ function New-KonguardHtmlReport {
     <div class="row"><span class="k">Security</span> $($Scan.health.breakdown.security)</div>
     <div class="row"><span class="k">Why this score?</span></div>
     <pre>$reasonsText</pre>
+  </div>
+"@
+    }
+
+    # Tech mode shows raw JSON excerpt for auditing
+    $techBlock = ""
+    if ($Mode -eq "tech") {
+        $raw = ($Scan | ConvertTo-Json -Depth 6)
+        $techBlock = @"
+  <div class="card">
+    <h2>🧰 Technician Details (Raw)</h2>
+    <div class="muted">For audits and troubleshooting. (Still local-only, read-only.)</div>
+    <pre>$raw</pre>
   </div>
 "@
     }
@@ -70,7 +83,7 @@ function New-KonguardHtmlReport {
 </head>
 <body>
   <div class="title">🦍 KONGUARD Report</div>
-  <div class="muted">Machine: <b>$($meta.machine)</b> · Timestamp: <b>$($meta.timestamp)</b> · Version: <b>$($meta.version)</b></div>
+  <div class="muted">Machine: <b>$($meta.machine)</b> · Timestamp: <b>$($meta.timestamp)</b> · Version: <b>$($meta.version)</b> · Mode: <b>$Mode</b></div>
 
   <div class="banner">
     <b>Transparency:</b> This scan runs locally. No data leaves your computer. (Read-only)
@@ -98,6 +111,8 @@ $healthBlock
     <h2>🛡️ Security</h2>
     $securityHtml
   </div>
+
+$techBlock
 
 </body>
 </html>
