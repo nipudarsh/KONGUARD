@@ -1,4 +1,3 @@
-
 # KONGUARD - Portable System Verification Tool (offline, read-only)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -17,7 +16,7 @@ Import-KGModule "Hardware.psm1"
 Import-KGModule "Software.psm1"
 Import-KGModule "Security.psm1"
 Import-KGModule "Baseline.psm1"
-# Report module (NEW)
+Import-KGModule "Scoring.psm1"
 Import-KGModule "Report.psm1"
 
 Write-Host "KONGUARD: Starting scan (offline, read-only)..." -ForegroundColor Cyan
@@ -25,7 +24,7 @@ Write-Host "KONGUARD: Starting scan (offline, read-only)..." -ForegroundColor Cy
 $scan = [ordered]@{
   meta = [ordered]@{
     tool      = "KONGUARD"
-    version   = "0.2.0"
+    version   = "0.3.0"
     timestamp = (Get-Date).ToString("s")
     machine   = $env:COMPUTERNAME
   }
@@ -34,6 +33,9 @@ $scan = [ordered]@{
   security = Get-KonguardSecurity
 }
 
+# Health score (NEW)
+$scan.health = Get-KonguardHealthScore -Scan $scan
+
 # Output folders (local-only)
 $snapDir = Join-Path $Root "snapshots"
 $repDir  = Join-Path $Root "reports"
@@ -41,13 +43,13 @@ New-Item -ItemType Directory -Force -Path $snapDir, $repDir | Out-Null
 
 # Save snapshot (JSON)
 $snapPath = Join-Path $snapDir ("snapshot_{0}.json" -f (Get-Date -Format "yyyyMMdd_HHmmss"))
-$scan | ConvertTo-Json -Depth 8 | Out-File -Encoding UTF8 $snapPath
+$scan | ConvertTo-Json -Depth 10 | Out-File -Encoding UTF8 $snapPath
 
 # Save report (HTML)
 $repPath = Join-Path $repDir ("report_{0}.html" -f (Get-Date -Format "yyyyMMdd_HHmmss"))
 New-KonguardHtmlReport -Scan $scan -OutputPath $repPath
 
-# Baseline + comparison (NEW)
+# Baseline + comparison
 $baselinePath = Join-Path $Root "snapshots\baseline.json"
 $baseline = Import-KonguardBaseline -BaselinePath $baselinePath
 
@@ -60,8 +62,6 @@ if ($null -eq $baseline) {
     New-KonguardComparisonReport -Diff $diff -OutputPath $cmpPath
     Write-Host "Saved comparison report: $cmpPath" -ForegroundColor Green
 }
-
-
 
 Write-Host "Saved snapshot: $snapPath" -ForegroundColor Green
 Write-Host "Saved report:   $repPath" -ForegroundColor Green
