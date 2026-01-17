@@ -14,3 +14,7 @@ Thumbs.db
 
 # PowerShell / Windows noise
 *.log
+
+# Build artifacts
+dist/
+
