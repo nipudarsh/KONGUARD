@@ -1,4 +1,10 @@
 # KONGUARD🦍🛡️
+![MIT License](https://img.shields.io/badge/license-MIT-green.svg)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue.svg)
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B%20%7C%207%2B-blue.svg)
+![Offline](https://img.shields.io/badge/offline-first-yes-brightgreen.svg)
+![Read-only](https://img.shields.io/badge/read--only-yes-brightgreen.svg)
+
 ## CLI Demo
 
 ```text
