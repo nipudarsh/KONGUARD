@@ -1,11 +1,16 @@
-# Local outputs
+# KONGUARD local outputs (do not commit)
 snapshots/
 reports/
 
-# Logs
-*.log
+# Logs / cache
+logs/
+cache/
 
-# OS/editor
+# OS / editor noise
 .DS_Store
 Thumbs.db
-.vscode/
+*.swp
+*.tmp
+
+# PowerShell / Windows noise
+*.log
