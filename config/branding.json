@@ -1,0 +1,12 @@
+{
+  "product_name": "KONGUARD",
+  "tagline": "System Black Box",
+  "vendor_name": "KONGUARD Labs",
+  "website": "https://github.com/nipudarsh/KONGUARD",
+  "primary": "#2563eb",
+  "accent": "#06b6d4",
+  "logo_text": "KONGUARD",
+  "footer_note": "Local-only • Read-only • Offline-first • No telemetry",
+  "report_title_format": "{product_name} Report",
+  "enable_white_label": true
+}
